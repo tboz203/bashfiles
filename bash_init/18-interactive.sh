@@ -82,3 +82,8 @@ DOCKER_COMPLETION_SHOW_NODE_IDS=yes
 DOCKER_COMPLETION_SHOW_PLUGIN_IDS=yes
 DOCKER_COMPLETION_SHOW_SECRET_IDS=yes
 DOCKER_COMPLETION_SHOW_SERVICE_IDS=yes
+
+# if MANPATH is set, it almost definitely doesn't have everything it needs to
+# have, so make sure it starts with the null entry (which indicates the
+# default MANPATH lookup algorithm)
+pathmungex -brE MANPATH ""

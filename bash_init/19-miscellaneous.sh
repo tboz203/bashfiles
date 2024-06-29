@@ -17,6 +17,8 @@ export LESS="-SRi"
 (less --help |& grep -q "mouse") && LESS+=" --mouse --wheel-lines=3"
 export LESSCHARSET=utf-8
 
+[[ ${SHELL-} != /bin/bash ]] || SHELL=/usr/local/bin/bash
+
 setpath -e PYTHONSTARTUP ~/.pythonrc.py
 setpath -e REQUESTS_CA_BUNDLE /etc/pki/ca-trust/extracted/openssl/ca-bundle.trust.crt
 setpath -e BOOST_ROOT ~/.local/boost_1_82_0

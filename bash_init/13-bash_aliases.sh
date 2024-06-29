@@ -6,7 +6,6 @@
 shopt -s expand_aliases
 
 alias rmf='rm -rf'
-alias cd='cd -P'
 alias make='make -j $(nproc)'
 
 alias xargs='xargs -r '
@@ -15,23 +14,19 @@ alias xargs='xargs -r '
 alias day='date +%Y-%m-%d'
 alias full='date "+%Y.%m.%d-%H.%M.%S"'
 
-# print out all variables, even if not exported
-# sh*llcheck sees `$item` being used, but not defined 🙄
-# shellcheck disable=SC2154
-# alias xenv='compgen -v | grep -v "^_" | sort | while read -r item; do declare -p $item ; done'
-
 [[ ${_SHELL_INTERACTIVE-} ]] || return 0
 
-# color aliases
 alias grep='grep --color=auto'
 alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
 
 # make sure `diff` *has* color before trying to use it
-diff --help 2>&1 | grep -q -- '--color' && alias diff='diff --color=auto'
+if [[ $(diff --help 2>&1) == *'--color'* ]]; then
+    alias diff='diff --color=auto'
+fi
 
 alias tree='tree -phugs -C --metafirst --dirsfirst'
-if tree --help 2>&1 | grep -q -- '--gitignore'; then
+if [[ $(tree --help 2>&1) == *'--gitignore'* ]]; then
     BASH_ALIASES['tree']+=' --gitignore'
 fi
 
@@ -53,8 +48,8 @@ alias vim='nvim'
 # alias view='view -p'
 alias view='nvim -R'
 alias nv=nvim
-alias nvimdiff='nvim -d'
-alias nvdiff=nvimdiff
+alias nvdiff='nv -d'
+alias nvimdiff=nvdiff
 
 # alias cat=bat
 
@@ -77,57 +72,45 @@ alias mv='mv -vi'
 alias cp='cp -vri'
 alias rm='rm -vI --one-file-system'
 
-# set some default flags
+# default flags
 # alias tidy='tidy -f /dev/null -iqmw'
 # alias astyle='astyle -sajcn'
 # alias find='find 2>/dev/null'
 alias nl='nl -ba'
 alias figlet='figlet -t'
-# alias rgrep='grep -r'
 alias ps='ps -H'
 alias df='df -h'
-# alias du='du -shc'
+alias xclip='xclip -selection clipboard'
+alias http='http --ignore-stdin'
+alias ncdu='ncdu --exclude-caches --exclude=node_modules --exclude=cache --exclude=.cache --exclude=venv --exclude=tmp'
 
-alias py='python'
-alias ipy='ipython'
-
-alias vimrc='vim ~/.vimrc'
-# alias gvimrc='gvim ~/.gvimrc'
-alias bashrc='nv ~/.bashrc ~/.bash_init/*'
-alias aliases='nv ~/.bash_init/*aliases*'
-alias bashlib='nv ~/.bashlib.sh ~/.bashlib/*'
-alias nvconfig='nv ~/.config/nvim/lua/config/lazy.lua'
-# alias nvrc='nv ~/.config/nvim/lua/{plugins/{core,python}.lua,config/{options,keymaps}.lua} +"Neotree show ~/.config/nvim"'
-alias nvrc='nv ~/.config/nvim/lua/{plugins,config}/*.lua'
+alias vimrc='vim ~/config/dotfiles/vimrc'
+alias bashrc='nv ~/config/dotfiles/{bashrc,bash_init/1?-*.sh}'
+alias aliases='nv ~/config/dotfiles/bash_init/*aliases*'
+alias bashlib='nv ~/config/dotfiles/bashlib{.sh,/*}'
+alias bash_init='nv ~/config/dotfiles/{bashrc,bashlib{.sh,/*},bash_init/*}'
+alias nvrc='nv ~/config/configfiles/nvim/lua/{plugins/core.lua,config/{lazy,options,keymaps}.lua}'
+alias nvconfig='nv ~/config/configfiles/nvim/lua/{plugins,config}/*.lua'
 alias nvimrc=nvrc
 
-alias open='gio open'
-
-alias listening='lsof -i -s TCP:Listen'
-alias ports='sudo ss -tlnp | ( sed -u 1q ; sort -k 4)'
-
-alias docker-prune='docker system prune -f --volumes'
+# alias docker-prune='docker system prune -f --volumes'
+alias docker-prune='docker container prune -f && docker volume prune -f && docker image prune -f && docker network prune -f'
 alias docker-halt='docker container ls -a --format "{{.Names}}" | xargs -r docker container rm -f'
-alias docker-scrub='docker-halt && docker-prune'
-alias docker-purge='docker-halt && docker-prune -a'
+alias docker-scrub='docker system prune -f --all --volumes'
+alias docker-purge='docker-halt && docker-scrub'
+
+alias open='gio open'
+alias py='python'
+alias ipy='ipython'
+alias hd='hexdump -C'
+# alias listening='lsof -i -s TCP:Listen'
+# attempting to sort by listening address; not 100% effective
+# alias ports='sudo ss -tlnp | ( sed -u 1q ; sort -k 4)'
 
 alias loud='BASH_ENV=~/.bash_loud '
 
-alias xclip='xclip -selection clipboard'
-
-alias http='http --ignore-stdin'
-
-alias ncdu='ncdu --exclude-caches --exclude=node_modules --exclude=cache --exclude=.cache --exclude=venv'
-
 # become root, but with all my bells and whistles (not well tested)
 alias super='sudo env HOME=$HOME /usr/local/bin/bash --login -i'
-
-if [[ -f /usr/local/lib/antlr-4.9-complete.jar ]]; then
-    alias grun='java -Xmx500M -cp "/usr/local/lib/antlr-4.9-complete.jar:$CLASSPATH" org.antlr.v4.gui.TestRig'
-    alias antlr4='java -Xmx500M -cp "/usr/local/lib/antlr-4.9-complete.jar:$CLASSPATH" org.antlr.v4.Tool'
-    # alias antlr4='java -Xmx500M -cp "/usr/local/lib/antlr-4.8-complete.jar:$CLASSPATH" org.antlr.v4.Tool'
-    # alias antlr4='java -Xmx500M -cp "/usr/local/lib/antlr-4.7-complete.jar:$CLASSPATH" org.antlr.v4.Tool'
-fi
 
 alias help2man='help2man -N -L $LC_ALL'
 
