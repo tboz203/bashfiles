@@ -4,7 +4,8 @@
 # expand aliases even if not interactive
 shopt -s expand_aliases
 
-alias rmf='rm -rf'
+alias rmf='\rm -I --one-file-system -rf'
+alias rimraf='rmf'
 alias xargs='xargs -r '
 alias day='date +%Y-%m-%d'
 alias full='date "+%Y.%m.%d-%H.%M.%S"'
@@ -14,17 +15,25 @@ alias full='date "+%Y.%m.%d-%H.%M.%S"'
 # common
 #--------------------
 
-alias ls='ls --color=auto --ignore-backups --group-directories-first --sort=version --ignore="NTUSER*" --ignore="ntuser*"'
+alias tree='tree -C --dirsfirst --noreport --filelimit=50'
+if [[ $(tree --version) > "tree v2.0.0" ]]; then
+    # BASH_ALIASES['tree']+=' --metafirst --gitignore --sort=version'
+    BASH_ALIASES['tree']+=' --metafirst --sort=version'
+fi
+
+alias _ls='\ls --color=auto --group-directories-first --sort=version'
+alias ls='_ls --ignore-backups --ignore="NTUSER*" --ignore="ntuser*"'
+alias la='_ls -A'
 alias ll='ls -lhF'
-alias la='ls -A'
-alias lla='ll -A'
+alias lla='la -lhF'
+alias lll='ll -L'
+# alias lt='tree -pugDF --si --du'
+alias lt='tree -pugDF --si --du --gitignore'
+# alias lta='lt -a'
+alias lta='tree -pugDF --si --du -a'
+alias ltc='tree --filelimit=1000 | column'
 # alias lt='ls --sort=time'
 # alias llt='ll --sort=time'
-alias lt='tree -pugshD -l --metafirst --dirsfirst --noreport --sort=version --filelimit=50'
-if [[ $(tree --help 2>&1) == *'--gitignore'* ]]; then
-    BASH_ALIASES['lt']+=' --gitignore'
-fi
-alias lta='lt -a'
 alias l.='la -I "[^.]*"'
 alias ll.='lla -I "[^.]*"'
 alias l='ls -CF'
@@ -37,6 +46,9 @@ alias view='view -p'
 alias nv=nvim
 alias nvdiff='nv -d'
 alias nvimdiff=nvdiff
+
+alias watch='watch '
+alias sudo='sudo '
 
 # default flags
 # --------------------
@@ -64,19 +76,20 @@ alias xclip='xclip -selection clipboard'
 alias http='http --ignore-stdin'
 alias ncdu='ncdu --exclude-caches --exclude=node_modules --exclude=cache --exclude=.cache --exclude=venv --exclude=tmp'
 alias help2man='help2man -N -L $LC_ALL'
-alias info='info --vi-keys'
+# alias info='info --vi-keys'
+alias c='clear'
+alias clear='clear -x'
 
 # editing rc files
 # --------------------
 
-alias vimrc='vim ~/config/dotfiles/vimrc'
-alias bashrc='nv ~/config/dotfiles/{bashrc,bash_init/1?-*.sh}'
-alias aliases='nv ~/config/dotfiles/bash_init/*aliases*'
-alias bashlib='nv ~/config/dotfiles/bashlib{.sh,/*}'
-alias bash_init='nv ~/config/dotfiles/{bashrc,bashlib{.sh,/*},bash_init/*}'
-alias nvrc='nv ~/config/configfiles/nvim/lua/{plugins/core.lua,config/{lazy,options,keymaps}.lua}'
-alias nvconfig='nv ~/config/configfiles/nvim/lua/{plugins,config}/*.lua'
-alias nvimrc=nvrc
+alias vimrc='vim --cmd "cd ~/config/dotfiles" ~/config/dotfiles/vimrc'
+alias bashrc='nv --cmd "cd ~/config/dotfiles" ~/config/dotfiles/{bashrc,bash_init/3?-*.sh}'
+alias aliases='nv --cmd "cd ~/config/dotfiles" ~/config/dotfiles/bash_init/??-aliases.sh'
+alias nvbashlib='nv --cmd "cd ~/config/dotfiles/bashlib" ~/config/dotfiles/bashlib{,/??-*}.sh'
+alias nvbash_init='nv --cmd "cd ~/config/dotfiles/bash_init" ~/config/dotfiles/{bashrc,bash_init/??-*.sh}'
+alias nvrc='nv --cmd "cd ~/config/configfiles/nvim" ~/config/configfiles/nvim/lua/{plugins/{editor,language},config/{autocmds,keymaps,options}}.lua'
+alias nvconfig='nv --cmd "cd ~/config/configfiles/nvim" ~/config/configfiles/nvim/lua/{plugins,config}/*.lua'
 
 # misspellings
 # --------------------
@@ -100,6 +113,8 @@ alias py='python'
 alias ipy='ipython'
 alias hd='hexdump -C'
 
+alias cloc=tokei
+
 # new creations
 # --------------------
 
@@ -110,7 +125,7 @@ alias docker-scrub='docker system prune -f --all --volumes'
 alias docker-purge='docker-halt && docker-scrub'
 
 alias dfx='df -h -t xfs'
-alias files='fd . -t f'
+alias files='fd -t f'
 alias open='gio open'
 # alias listening='lsof -i -s TCP:Listen'
 # attempting to sort by listening address; not 100% effective

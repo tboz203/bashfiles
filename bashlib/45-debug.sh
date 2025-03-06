@@ -3,7 +3,7 @@
 # inspired by https://flokoe.github.io/bash-hackers-wiki/scripting/debuggingtips/#making-xtrace-more-useful
 export PS4='+\011\e[02m${EPOCHREALTIME:+[$EPOCHREALTIME] }(${BASH_SOURCE:-main}:$LINENO${FUNCNAME:+:$FUNCNAME}): \e[0m'
 
-alias _if_verbose=': #'
+alias _if_verbose='true #'
 alias _if_debug=': #'
 case ${_BASHLIB_LOGLEVEL-} in
     trace) ;&
@@ -12,12 +12,12 @@ case ${_BASHLIB_LOGLEVEL-} in
     *) ;;
 esac
 
-inspect_var() {
+function inspect_var {
     (($# >= 1)) || throw "Not enough arguments"
     declare -p -- "$@" 2>&1 | indent >&2
 }
 
-replace_exec() {
+function replace_exec {
     # replace the `exec` builtin with a function that:
     # 1) displays the command to be executed, and pauses
     # 2) executes that command in a child process (i.e. NOT by the exec builtin)
@@ -26,30 +26,38 @@ replace_exec() {
     # recommended usage: _if_verbose replace_exec
 
     # shellcheck disable=2317
-    exec() {
+    function exec {
         _if_verbose stackline
-        _log "will run: $*" && pause
+        _log "will run: $*"
+        pause || throw "Interrupted"
         local retval=0
         command "$@" || retval=$?
-        _log "exited with $retval ($*)" && pause
+        _log "exited with $retval ($*)"
+        pause || throw "Interrupted"
         exit "$retval"
     }
 }
 
-print_stack() {
-    local i=0
+function print_stack {
+    local -i i=${1:-0}
     # println "$LINENO ${FUNCNAME[0]} ${BASH_SOURCE[0]}"
     while caller $i; do ((i++)); done
 }
 
-stack() {
+function stack {
+    local -i skip=${1:-1}
     local line func file
-    print_stack | while read -r line func file; do
-        println "$func ($file:$line)"
-    done
+
+    local -a frames
+    while read -r line func file; do
+        frames+=("$func ($file:$line)")
+    done <<< "$(print_stack $((skip + 1)))"
+
+    printf "┌> %s\n" "${frames[@]::${#frames[@]}-1}"
+    println "${frames[@]: -1}"
 }
 
-called-at() {
+function called-at {
     # like `caller` but with nicer formatting
     (($# <= 1)) || throw "Too many arguments"
     local idx=${1:-0}
@@ -60,16 +68,16 @@ called-at() {
     println "${funcname:+$funcname }(${filename:-main}:$lineno)"
 }
 
-stackline() {
-    local -a stackframes
+function stackline {
+    local -a frames
     for ((i = ${#BASH_SOURCE[@]} - 1; i > 1; i--)); do
-        stackframes+=("${FUNCNAME[$i]} (${BASH_SOURCE[$i]}:${BASH_LINENO[$i - 1]})")
+        frames+=("${FUNCNAME[$i]} (${BASH_SOURCE[$i]}:${BASH_LINENO[i - 1]})")
     done
 
-    join " > " "${stackframes[@]}"
+    join " > " "${frames[@]}"
 }
 
-stacktrace() {
+function stacktrace {
     # print the current call stack
     local context=2 top=0 bottom=0
 
@@ -123,11 +131,11 @@ stacktrace() {
     # iterating through 3 related arrays in reverse
     local idx
     for ((idx = bottom; idx > top; idx--)); do
-        showframe "${BASH_SOURCE[$idx]}" "${FUNCNAME[$idx]}" "${BASH_LINENO[$idx - 1]}"
+        showframe "${BASH_SOURCE[$idx]}" "${FUNCNAME[$idx]}" "${BASH_LINENO[idx - 1]}"
     done
 }
 
-_traceback() {
+function traceback {
     local last_status=$?
     if (($# != 5)); then
         _err "Wrong number of arguments"
@@ -155,13 +163,13 @@ _traceback() {
 
     echo ">> $command ($retval)"
 
-    pause
+    pause || throw "Interrupted"
     return $last_status
-} && alias traceback='_traceback "${BASH_SOURCE-}" "${FUNCNAME-}" "$LINENO" "$BASH_COMMAND" "$?"'
+} && alias traceback='traceback "${BASH_SOURCE-}" "${FUNCNAME-}" "$LINENO" "$BASH_COMMAND" "$?"'
 
 [[ :${_BASHLIB_FLAGS-}: != *:stacktrace:* ]] || trap 'traceback' ERR EXIT
 
-mtime() {
+function mtime {
     # time a statement with microsecond precision (accuracy not guaranteed 😬)
     local start=$EPOCHREALTIME stop retval=0
     "$@" || retval=$?
@@ -170,7 +178,7 @@ mtime() {
     return $retval
 }
 
-nested() {
+function nested {
     (($# >= 2)) || throw "Not enough arguments"
     local depth=${1:?0} && shift
     if ((depth > 0)); then
