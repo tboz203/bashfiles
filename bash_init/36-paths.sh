@@ -1,6 +1,7 @@
 # ensure PATH is populated
 
-cleanpath
+[[ ! ${_BASH_INIT_PATHS_SET-} ]] || return 0
+export _BASH_INIT_PATHS_SET=1
 
 pathmungex --replace PATH \
     ~/.local/bin \
@@ -15,9 +16,6 @@ pathmungex --replace PATH \
     /usr/local/go/bin \
     /usr/local/bin \
     /usr/bin
-
-pathmungex --before PATH \
-    ~/.bin
 
 pathmungex --after PATH \
     ~/.local/share/idea/bin \
