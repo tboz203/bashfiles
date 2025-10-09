@@ -25,7 +25,7 @@ function replace_exec {
     # 4) exits
     # recommended usage: _if_verbose replace_exec
 
-    # shellcheck disable=2317
+    # shellcheck disable=SC2329
     function exec {
         _if_verbose stackline
         _log "will run: $*"

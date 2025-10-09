@@ -75,7 +75,8 @@ if ((BASH_VERSINFO[0] >= 5)); then
         elif [[ ${RETURN-} ]]; then
             return 1
         fi
-    } && alias setpath='withflags +vx -- \setpath '
+        # } && alias setpath='withflags +vx -- \setpath '
+    }
 else
     function setpath {
         local -a POSITIONAL
@@ -135,7 +136,8 @@ else
         elif [[ ${RETURN-} ]]; then
             return 1
         fi
-    } && alias setpath='withflags +vx -- \setpath '
+        # } && alias setpath='withflags +vx -- \setpath '
+    }
 fi
 
 function sourcepath {
@@ -592,7 +594,8 @@ if ((BASH_VERSINFO[0] >= 5)); then
         _if_debug inspect_var PATHLIST ADDITIONS FRONT BACK
         _if_verbose _log "set $PATHVAR to ([${!PATHVAR//:/], [}])"
         hash -r
-    } && alias pathmungex='withflags +vx -- \pathmungex '
+        # } && alias pathmungex='withflags +vx -- \pathmungex '
+    }
 else
     function pathmungex {
         # like pathmunge, but better
@@ -809,7 +812,8 @@ else
         _if_debug inspect_var PATHLIST ADDITIONS FRONT BACK
         _if_verbose _log "set $PATHVAR to ([${!PATHVAR//:/], [}])"
         hash -r
-    } && alias pathmungex='withflags +vx -- \pathmungex '
+        # } && alias pathmungex='withflags +vx -- \pathmungex '
+    }
 fi
 
 if ((BASH_VERSINFO[0] >= 5)); then

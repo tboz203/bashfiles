@@ -12,7 +12,10 @@ function _bashlib {
 
     [[ ${_BASHLIB_LOGLEVEL-} ]] || declare -g _BASHLIB_LOGLEVEL=normal
     [[ ${_BASHLIB_FLAGS-} ]] || declare -g _BASHLIB_FLAGS=:noreplace_exec:
-    [[ ${_BASHLIB_ROOT-} ]] || declare -g _BASHLIB_ROOT=~/.bashlib
+    if [[ ! ${_BASHLIB_ROOT-} ]]; then
+        _BASHLIB_ROOT=$(dirname "$(realpath "$BASH_SOURCE")")
+        export _BASHLIB_ROOT
+    fi
 
     shopt -s expand_aliases
 
@@ -28,8 +31,8 @@ function _bashlib {
     fi
 
     local item
-    for item in "$_BASHLIB_ROOT"/*; do
-        if [[ $item == *.sh ]]; then
+    for item in "$_BASHLIB_ROOT"/bashlib/*; do
+        if [[ $item == *.@(sh|bash) ]]; then
             source "$item"
         else
             echo >&2 "[!] $FUNCNAME: Will not source file: $item"
@@ -37,4 +40,6 @@ function _bashlib {
     done
 }
 
-_bashlib
+if [[ ! ${_BASHLIB_SKIP-} ]]; then
+    _bashlib
+fi

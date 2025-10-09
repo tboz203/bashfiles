@@ -12,9 +12,9 @@ alias _warn="echo >&2 \"[!] ${_WHERE}:\""
 alias _err="echo >&2 \"[X] ${_WHERE}:\""
 
 # silently check for a binary in the path
-alias havebin='type > /dev/null -P'
+alias havebin='type -P > /dev/null'
 # silently check for a command (i.e. a binary, function, builtin, or alias)
-alias havecmd='type > /dev/null -t'
+alias havecmd='type -t > /dev/null'
 
 # print an error message & return 1
 # usage: throw MESSAGE
