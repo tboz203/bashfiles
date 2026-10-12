@@ -6,14 +6,12 @@
 #   /etc/profile
 #     /etc/bash.bashrc (does basically nothing lol)
 #     /etc/profile.d/*
-#       /etc/profile.d/bash_completion.sh
-#         ~/.config/bash_completion (<<<)
-#         /usr/share/bash-completion/bash_completion (IF shopt -q progcomp; BIG)
+#       ...
 #   ~/.bash_profile (or ~/.bash_login or ~/.profile; symlink to this file)
 #
 # interactive non-login shells:
 #   /etc/bash.bashrc (does basically nothing lol)
-#   ~/.bashrc (this file)
+#   ~/.bashrc (symlink to this file)
 # non-interactive shells:
 #   $BASH_ENV
 
@@ -29,9 +27,14 @@ function _bash_init {
     # _BASHLIB_LOGLEVEL=debug
     # _BASHLIB_FLAGS=:replace_exec:stacktrace:
 
+    if [[ ! ${_BASH_INIT_ROOT-} ]]; then
+        _BASH_INIT_ROOT=$(dirname "$(realpath "$BASH_SOURCE")")
+        export _BASH_INIT_ROOT
+    fi
+
     local item
-    for item in ~/.bash_init/*; do
-        if [[ $item == *.sh ]]; then
+    for item in "${_BASH_INIT_ROOT-}"/bash_init/*; do
+        if [[ $item == *.@(sh|bash) ]]; then
             source "$item"
         else
             echo >&2 "[!] $FUNCNAME: Will not source file: $item"
@@ -39,7 +42,9 @@ function _bash_init {
     done
 }
 
-_bash_init
+if [[ ! ${_BASH_INIT_SKIP-} ]]; then
+    _bash_init
+fi
 
 # ignore any crap installer scripts try to append to this file
 return 0

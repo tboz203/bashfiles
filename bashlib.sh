@@ -1,5 +1,4 @@
 # bashlib.sh
-# load bashlib
 
 function _bashlib {
     # step one: where are we?
@@ -11,28 +10,29 @@ function _bashlib {
         echo >&2 "Hi! Go update your bash please ($BASH_VERSION)"
     fi
 
-    # step three: blather
     [[ ${_BASHLIB_LOGLEVEL-} ]] || declare -g _BASHLIB_LOGLEVEL=normal
     [[ ${_BASHLIB_FLAGS-} ]] || declare -g _BASHLIB_FLAGS=:noreplace_exec:
-    [[ ${_BASHLIB_ROOT-} ]] || declare -g _BASHLIB_ROOT=~/.bashlib
+    if [[ ! ${_BASHLIB_ROOT-} ]]; then
+        _BASHLIB_ROOT=$(dirname "$(realpath "$BASH_SOURCE")")
+        export _BASHLIB_ROOT
+    fi
 
-    # step four: complain again
+    shopt -s expand_aliases
+
+    shopt -s extglob
+    shopt -s globstar
+    shopt -s nullglob
+
+    shopt -u nocasematch
+
     if [[ ! -d ${_BASHLIB_ROOT:?} ]]; then
         echo >&2 "_BASHLIB_ROOT ($_BASHLIB_ROOT) does not exist"
         return 1
     fi
 
-    # step five: prepare
-    shopt -s expand_aliases
-    shopt -s extglob
-    shopt -s globstar
-    shopt -s nullglob
-    shopt -u nocasematch
-
-    # step six: get to work
     local item
-    for item in "$_BASHLIB_ROOT"/*; do
-        if [[ $item == *.sh ]]; then
+    for item in "$_BASHLIB_ROOT"/bashlib/*; do
+        if [[ $item == *.@(sh|bash) ]]; then
             source "$item"
         else
             echo >&2 "[!] $FUNCNAME: Will not source file: $item"
@@ -40,4 +40,6 @@ function _bashlib {
     done
 }
 
-_bashlib
+if [[ ! ${_BASHLIB_SKIP-} ]]; then
+    _bashlib
+fi
